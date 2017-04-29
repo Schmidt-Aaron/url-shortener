@@ -1,0 +1,26 @@
+{
+  "name": "url-shortener",
+  "version": "1.0.0",
+  "description": "url shortener api",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Schmidt-Aaron/url-shortener.git"
+  },
+  "keywords": [
+    "url",
+    "shortener",
+    "node",
+    "express",
+    "mongodb"
+  ],
+  "author": "Aaron Schmidt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Schmidt-Aaron/url-shortener/issues"
+  },
+  "homepage": "https://github.com/Schmidt-Aaron/url-shortener#readme"
+}
