@@ -47,10 +47,15 @@ MongoClient.connect(url, function(err, db){
     //do the things with the db
     var collection = db.collection('urls');
 
-    //insert a few test values to play with
+    //insert a few test values to play with delete later
     // collection.insert( {
     //     'originalUrl': 'https://expressjs.com/en/guide/routing.html',
     //     'shortUrl': '1111'
+    // });
+
+    //collection.insert( {
+    //     'originalUrl': passedUrl,
+    //     'shortUrl': generate a new id
     // });
 
     //retrieve original url value and GET it
