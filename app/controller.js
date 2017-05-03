@@ -33,12 +33,3 @@ MongoClient.connect(url, function(err, db){
         console.log('Connection to db closed');
     })
 });
-
-var test = function() {
-    console.log('url.js has been linked');
-}
-
-//functions we are exporting
-module.exports = {
-    //test: test
-};

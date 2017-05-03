@@ -8,10 +8,10 @@ var validUrl = require('valid-url');
 var isValid = function(url) {
      if(validUrl.isUri(url)) {
         console.log(url + ' is a valid url. Way to go champ!');
-        res.send('this is a valid url')
+        return true;
     } else {
         console.log('not a valid url');
-        res.send('not a valid url. Please try again.');
+        return false;
     }
 }
 
