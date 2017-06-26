@@ -4,9 +4,11 @@
 //load express and other dependencies
 var express = require('express');
 var app = express();
+var validUrl = require('valid-url');
+var shortid = require('shortid');
+
 
 //test urls
-var validUrl = require('valid-url');
 var isValid = function(url) {
      if(validUrl.isUri(url)) {
         console.log(url + ' is a valid url. Way to go champ!');
@@ -16,6 +18,8 @@ var isValid = function(url) {
         return false;
     }
 }
+
+
 //end test urls
 //our app modules
 //var url = require('./app/url');
@@ -26,7 +30,7 @@ var MongoClient = require('mongodb').MongoClient;
 
 //where the database is
 // var url = 'mongodb://localhost:27017/database_name';
-//obfuscate / change db later
+//add PROCESS.env / change db later
 var url = 'mongodb://fcc-url:short-url@ds062339.mlab.com:62339/url-short';
 var currentEntry;
 
@@ -82,36 +86,28 @@ MongoClient.connect(url, function(err, db){
            // res.send("oops, this url is not in the db");
         }
     });
-
-    //static page with usage instruction
-    app.use(express.static('public'));
-
-    //test passed string
-    app.route('/:url')
-        .get(strCheck)
-
-    function strCheck(req, res){
-
-    }
-
-    // //capture url
-    // app.route('/api/:url')
-    //     .get(function(req, res) {
-
-    //     })
-
-    //commented out to test another method
-    // app.get('/api/', function(req, res){
-    //     passedUrl = req.query.url
-    //     console.log(passedUrl);
-    //     res.send('your url is ' + passedUrl)
-    
-    // })
-
-    var port = process.env.PORT || 3000;
-    app.set('port', port);
-    app.listen(port, () => {
-        console.log(`Listening on ${port}.`)
-    });
-
 });//end db
+
+
+//static page with usage instruction
+app.use(express.static('public'));
+
+//test passed string
+app.get('/new/:url(*)', function(req, res, next) {
+    var param = req.params.url;
+    console.log(param);
+    res.send(param);
+});
+
+app.get('/id', function(req, res){
+    var sid = shortid.generate();
+    res.send(sid);
+    console.log(sid);
+} )
+
+
+var port = process.env.PORT || 3000;
+app.set('port', port);
+app.listen(port, () => {
+    console.log(`Listening on ${port}.`)
+});
