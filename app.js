@@ -53,9 +53,9 @@ MongoClient.connect(url, function(err, db){
 
     //insert a few test values to play with delete later
     // collection.insert( {
-    //     'originalUrl': 'https://expressjs.com/en/guide/routing.html',
-    //     'shortUrl': '1111'
-    // });
+    //     'originalUrl': "test.com",
+    //      'shortUrl': shortid.generate();
+    //  });
 
     //collection.insert( {
     //     'originalUrl': passedUrl,
@@ -95,8 +95,16 @@ app.use(express.static('public'));
 //test passed string
 app.get('/new/:url(*)', function(req, res, next) {
     var param = req.params.url;
+    var newId = shortid.generate();
     console.log(param);
-    res.send(param);
+    if(isValid(param)) {
+        res.send({
+            'long_url': param ,
+            'short_url': newId
+        });
+    } else {
+        res.send("that was not a properly formatted url. Please Try again. Urls need to be in the following format: http://url.com")
+    }
 });
 
 app.get('/id', function(req, res){
