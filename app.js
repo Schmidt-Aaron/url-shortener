@@ -51,13 +51,18 @@ app.get('/new/:url(*)', function(req, res) {
 
             //first check if the entry exists in db
             var insertUrl = function(db, callback) {
-                collection.findOne( { 'long_Url': newUrl }
-                    , {long_url: 1, _id: 0}
+                collection.findOne( { 'longUrl': newUrl }
+                    , {'longUrl': 1, 'shortUrl': 1, _id: 0}
                     , function(err, result){
                     console.log({"error": err, "result": result});
+                    
                     //what to do if found
                     if(result != null){
                         console.log("url already exists");
+                        res.send({
+                        'longUrl': result.longUrl,
+                        'shortUrl': 'localhost:3000/' + result.shortUrl
+                        });
                     } else {
                     //what to do if not found
                     //add validation if/else
@@ -69,7 +74,20 @@ app.get('/new/:url(*)', function(req, res) {
                             'shortUrl': newId
                         };
                         //console.log(`the data is: ${json.newLink}`);
+                        //collection.insertOne(newLink);
                         collection.insertOne(newLink);
+                        
+                        // setTimeout(function() {
+                        //     collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
+                        //         if (err) {
+                        //             console.log("error is: " + err)
+                        //         }
+                                
+                        //         res.send( {
+                        //             'longUrl': result.longUrl,
+                        //             'shortUrl': 'localhost:3000/' + result.shortUrl});
+                        //     })
+                        // }, 300)
                     }
                 })
             }
@@ -77,7 +95,15 @@ app.get('/new/:url(*)', function(req, res) {
         };//end db
 
         insertUrl(db, function(){
-            db.close();
+            collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
+                                if (err) {
+                                    console.log("error is: " + err)
+                                }
+                                
+                                res.send( {
+                                    'longUrl': result.longUrl,
+                                    'shortUrl': 'localhost:3000/' + result.shortUrl});
+                            });
         })
         
     });//end /new
