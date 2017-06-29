@@ -37,7 +37,7 @@ var url = 'mongodb://localhost:27017/urls';
 app.use(express.static('public'));
 
 //test passed string
-app.get('/new/:url(*)', function(req, res, next) {
+app.get('/new/:url(*)', function(req, res) {
     MongoClient.connect(url, function(err, db){
         if(err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -52,7 +52,7 @@ app.get('/new/:url(*)', function(req, res, next) {
             //first check if the entry exists in db
             var insertUrl = function(db, callback) {
                 collection.findOne( { 'long_Url': newUrl }
-                    , {'long_url': 1, _id: 0}
+                    , {long_url: 1, _id: 0}
                     , function(err, result){
                     console.log({"error": err, "result": result});
                     //what to do if found
@@ -60,12 +60,16 @@ app.get('/new/:url(*)', function(req, res, next) {
                         console.log("url already exists");
                     } else {
                     //what to do if not found
+                    //add validation if/else
                         console.log("result is not found")
-                        var newId = shortid.generate(); 
-                        collection.insert({
-                            "longUrl": newUrl,
-                            "shortUrl": newId
-                        });
+                        var newId = shortid.generate();
+                        console.log(newId, newUrl)
+                        var newLink = {
+                            'longUrl': newUrl,
+                            'shortUrl': newId
+                        };
+                        //console.log(`the data is: ${json.newLink}`);
+                        collection.insertOne(newLink);
                     }
                 })
             }
@@ -78,17 +82,6 @@ app.get('/new/:url(*)', function(req, res, next) {
         
     });//end /new
 });    
-    
-//     console.log(param);
-//     if(isValid(param)) {
-//         res.send({
-//             'long_url': param ,
-//             'short_url': newId
-//         });
-//     } else {
-//         res.send("that was not a properly formatted url. Please Try again. Urls need to be in the following format: http://url.com")
-//     }
-// });
 
 app.get('/id', function(req, res){
     var sid = shortid.generate();
