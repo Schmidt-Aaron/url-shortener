@@ -29,93 +29,76 @@ var isValid = function(url) {
 var MongoClient = require('mongodb').MongoClient;
 
 //where the database is
-// var url = 'mongodb://localhost:27017/database_name';
+var url = 'mongodb://localhost:27017/urls';
 //add PROCESS.env / change db later
-var url = 'mongodb://fcc-url:short-url@ds062339.mlab.com:62339/url-short';
-var currentEntry;
-
-MongoClient.connect(url, function(err, db){
-    if(err) {
-        console.log('Unable to connect to the mongoDB server. Error:', err);
-    } else {
-        console.log('Connection established to', url);
-    }
-    
-    //create collection if needed
-    db.createCollection("urls", {
-        capped: true,
-        size: 5242880,
-        max: 1000
-    });
-
-    //do the things with the db
-    var collection = db.collection('urls');
-
-    //insert a few test values to play with delete later
-    // collection.insert( {
-    //     'originalUrl': "test.com",
-    //      'shortUrl': shortid.generate();
-    //  });
-
-    //collection.insert( {
-    //     'originalUrl': passedUrl,
-    //     'shortUrl': generate a new id
-    // });
-
-    //retrieve original url value and GET it
-    // var stringToFind = function(str){
-    //     collection.find({
-    //             'shortUrl': str
-    //     },      'originalUrl'
-    //     )
-    // }
-    // stringToFind('test');
-
-    collection.findOne( { 'shortUrl': 'test' }, function(err, data) {
-        if(err) {
-            console.log(err);
-        }
-
-        //match in db
-        if(data) {
-            console.log(data);
-           // res.redirect(data.originalUrl);
-        } else {
-            //no match
-            console.log('no match in db');
-           // res.send("oops, this url is not in the db");
-        }
-    });
-});//end db
-
+//var url = 'mongodb://fcc-url:short-url@ds062339.mlab.com:62339/url-short';
 
 //static page with usage instruction
 app.use(express.static('public'));
 
 //test passed string
 app.get('/new/:url(*)', function(req, res, next) {
-    var param = req.params.url;
-    var newId = shortid.generate();
-    console.log(param);
-    if(isValid(param)) {
-        res.send({
-            'long_url': param ,
-            'short_url': newId
-        });
-    } else {
-        res.send("that was not a properly formatted url. Please Try again. Urls need to be in the following format: http://url.com")
-    }
-});
+    MongoClient.connect(url, function(err, db){
+        if(err) {
+            console.log('Unable to connect to the mongoDB server. Error:', err);
+        } else {
+            console.log('Connection established to', url);
+        
+
+            //time to do the things with the db
+            var collection = db.collection('urls');
+            var newUrl = req.params.url;
+
+            //first check if the entry exists in db
+            var insertUrl = function(db, callback) {
+                collection.findOne( { 'long_Url': newUrl }
+                    , {'long_url': 1, _id: 0}
+                    , function(err, result){
+                    console.log({"error": err, "result": result});
+                    //what to do if found
+                    if(result != null){
+                        console.log("url already exists");
+                    } else {
+                    //what to do if not found
+                        console.log("result is not found")
+                        var newId = shortid.generate(); 
+                        collection.insert({
+                            "longUrl": newUrl,
+                            "shortUrl": newId
+                        });
+                    }
+                })
+            }
+
+        };//end db
+
+        insertUrl(db, function(){
+            db.close();
+        })
+        
+    });//end /new
+});    
+    
+//     console.log(param);
+//     if(isValid(param)) {
+//         res.send({
+//             'long_url': param ,
+//             'short_url': newId
+//         });
+//     } else {
+//         res.send("that was not a properly formatted url. Please Try again. Urls need to be in the following format: http://url.com")
+//     }
+// });
 
 app.get('/id', function(req, res){
     var sid = shortid.generate();
     res.send(sid);
     console.log(sid);
-} )
+});
 
 
 var port = process.env.PORT || 3000;
 app.set('port', port);
-app.listen(port, () => {
-    console.log(`Listening on ${port}.`)
-});
+app.listen(port, function(){
+    console.log(`Listening on ${port}.`);
+})
