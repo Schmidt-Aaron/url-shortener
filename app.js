@@ -73,7 +73,7 @@ app.get('/new/:url(*)', function(req, res) {
                             'longUrl': newUrl,
                             'shortUrl': newId
                         };
-                        //console.log(`the data is: ${json.newLink}`);
+                    
                         //collection.insertOne(newLink);
                         collection.insertOne(newLink);
                         
