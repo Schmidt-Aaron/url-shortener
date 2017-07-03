@@ -100,8 +100,10 @@ app.get('/new/:url(*)', function(req, res) {
                             'longUrl': result.longUrl,
                             'shortUrl': 'localhost:3000/' + result.shortUrl});
                         });
+                        
                     //close our connection    
                     db.close();
+                    console.log('connection to db closed');
                 })
             } else {
                 console.log('not a valid URL');
