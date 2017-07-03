@@ -30,6 +30,7 @@ var MongoClient = require('mongodb').MongoClient;
 
 //where the database is
 var url = 'mongodb://localhost:27017/urls';
+
 //add PROCESS.env / change db later
 //var url = 'mongodb://fcc-url:short-url@ds062339.mlab.com:62339/url-short';
 
@@ -46,8 +47,8 @@ app.get('/new/:url(*)', function(req, res) {
         
 
             //time to do the things with the db
-            var collection = db.collection('urls');
             var newUrl = req.params.url;
+            var collection = db.collection('urls');
 
             //first check if the entry exists in db
             var insertUrl = function(db, callback) {
@@ -96,23 +97,61 @@ app.get('/new/:url(*)', function(req, res) {
 
         insertUrl(db, function(){
             collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
-                                if (err) {
-                                    console.log("error is: " + err)
-                                }
+                if (err) {
+                    console.log("error is: " + err)
+                }
                                 
-                                res.send( {
-                                    'longUrl': result.longUrl,
-                                    'shortUrl': 'localhost:3000/' + result.shortUrl});
-                            });
+                res.send( {
+                    'longUrl': result.longUrl,
+                    'shortUrl': 'localhost:3000/' + result.shortUrl});
+                });
+            //close our connection    
+            db.close();
         })
         
     });//end /new
 });    
 
-app.get('/id', function(req, res){
-    var sid = shortid.generate();
-    res.send(sid);
-    console.log(sid);
+app.get('/:url', function(req, res){
+    var shortUrl = req.params.url;
+    var longUrl;
+
+    MongoClient.connect(url, function(err, db){
+        if(err) {
+            console.log(err)
+        } else {
+            console.log('Connection established to', url);
+
+            var collection = db.collection('urls');
+
+            var checkUrl = function(db, callback) {
+                collection.findOne( { 'shortUrl': shortUrl }
+                    , {'longUrl': 1, 'shortUrl': 1, _id: 0}
+                    , function(err, result){
+                    console.log({"error": err, "result": result});
+                    
+                        //if not found
+                        if(result == null) {
+                            console.log("result not found");
+                            res.send("URL not found, please try again.")
+                        }
+
+                        //if found
+                        if(result != null){
+                            longUrl = result.longUrl;
+                            res.redirect(result.longUrl);
+                        }
+
+                    }
+                )    
+            }//end checkUrl
+
+            checkUrl(db, function(){
+                db.close();
+                console.log("db connection closed");
+            });
+        }   
+    })  //end connect         
 });
 
 
