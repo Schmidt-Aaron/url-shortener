@@ -1,4 +1,4 @@
-//step 1 make it work. 
+//step 1 make it work... yep!
 //step 2 make it pretty.
 
 //load express and other dependencies
@@ -44,73 +44,72 @@ app.get('/new/:url(*)', function(req, res) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
         } else {
             console.log('Connection established to', url);
-        
-
-            //time to do the things with the db
+            
             var newUrl = req.params.url;
-            var collection = db.collection('urls');
 
-            //first check if the entry exists in db
-            var insertUrl = function(db, callback) {
-                collection.findOne( { 'longUrl': newUrl }
-                    , {'longUrl': 1, 'shortUrl': 1, _id: 0}
-                    , function(err, result){
-                    console.log({"error": err, "result": result});
-                    
-                    //what to do if found
-                    if(result != null){
-                        console.log("url already exists");
-                        res.send({
-                        'longUrl': result.longUrl,
-                        'shortUrl': 'localhost:3000/' + result.shortUrl
-                        });
-                    } else {
-                    //what to do if not found
-                    //add validation if/else
-                        console.log("result is not found")
-                        var newId = shortid.generate();
-                        console.log(newId, newUrl)
-                        var newLink = {
-                            'longUrl': newUrl,
-                            'shortUrl': newId
-                        };
-                    
-                        //collection.insertOne(newLink);
-                        collection.insertOne(newLink);
+            //first check the parameter to see if it is a valid URL
+
+            //if a valid URL was passed
+            if(isValid(newUrl)){
+
+                //time to do the things with the db
+                var collection = db.collection('urls');
+
+                //first check if the entry exists in db
+                var insertUrl = function(db, callback) {
+                    collection.findOne( { 'longUrl': newUrl }
+                        , {'longUrl': 1, 'shortUrl': 1, _id: 0}
+                        , function(err, result){
+                        if(err){
+                            console.log("err: " + err);
+                        }
                         
-                        // setTimeout(function() {
-                        //     collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
-                        //         if (err) {
-                        //             console.log("error is: " + err)
-                        //         }
-                                
-                        //         res.send( {
-                        //             'longUrl': result.longUrl,
-                        //             'shortUrl': 'localhost:3000/' + result.shortUrl});
-                        //     })
-                        // }, 300)
-                    }
+                        //what to do if found
+                        if(result != null){
+                            console.log("url already exists");
+                            res.send({
+                            'longUrl': result.longUrl,
+                            'shortUrl': 'localhost:3000/' + result.shortUrl
+                            });
+                        } else {
+                        //what to do if not found
+                        //add validation if/else
+                            console.log("result is not found")
+                            var newId = shortid.generate();
+                            console.log(newId, newUrl)
+                            var newLink = {
+                                'longUrl': newUrl,
+                                'shortUrl': newId
+                            };
+                        
+                            //collection.insertOne(newLink);
+                            collection.insertOne(newLink);
+                        }
+                    })
+                }//end insertUrl
+
+            
+
+                insertUrl(db, function(){
+                    collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
+                        if (err) {
+                            console.log("error is: " + err)
+                        }
+                                        
+                        res.send( {
+                            'longUrl': result.longUrl,
+                            'shortUrl': 'localhost:3000/' + result.shortUrl});
+                        });
+                    //close our connection    
+                    db.close();
                 })
+            } else {
+                console.log('not a valid URL');
+                res.send('not a valid URL, please try again');
             }
-
-        };//end db
-
-        insertUrl(db, function(){
-            collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
-                if (err) {
-                    console.log("error is: " + err)
-                }
-                                
-                res.send( {
-                    'longUrl': result.longUrl,
-                    'shortUrl': 'localhost:3000/' + result.shortUrl});
-                });
-            //close our connection    
-            db.close();
-        })
-        
-    });//end /new
-});    
+        }
+    });//end mongo
+});  //end app.get  
 
 app.get('/:url', function(req, res){
     var shortUrl = req.params.url;

@@ -15,10 +15,6 @@ MongoClient.connect(url, function(err, db){
     
     //do the things with the db
     var collection = db.collection('urls');
-    // collection.insert( {
-    //     'original': 'http://google.com',
-    //     'new': '1'
-    // });
 
     currentEntry = collection.count( 'original', (err, count) => {
         console.log(err, count);
