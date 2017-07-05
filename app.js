@@ -8,7 +8,7 @@ var validUrl = require('valid-url');
 var shortid = require('shortid');
 
 
-//test urls
+//global function used by both routes to verify only valid URLs are used
 var isValid = function(url) {
      if(validUrl.isUri(url)) {
         console.log(url + ' is a valid url. Way to go champ!');
@@ -18,12 +18,6 @@ var isValid = function(url) {
         return false;
     }
 }
-
-
-//end test urls
-//our app modules
-//var url = require('./app/url');
-//var checkUrl = require('./app/checkUrl');
 
 //fire up mongo
 var MongoClient = require('mongodb').MongoClient;
@@ -37,8 +31,8 @@ var url = 'mongodb://localhost:27017/urls';
 //static page with usage instruction
 app.use(express.static('public'));
 
-//test passed string
-app.get('/new/:url(*)', function(req, res) {
+//api route
+app.get('/api/:url(*)', function(req, res) {
     MongoClient.connect(url, function(err, db){
         if(err) {
             console.log('Unable to connect to the mongoDB server. Error:', err);
@@ -48,7 +42,6 @@ app.get('/new/:url(*)', function(req, res) {
             var newUrl = req.params.url;
 
             //first check the parameter to see if it is a valid URL
-
             //if a valid URL was passed
             if(isValid(newUrl)){
 
@@ -73,7 +66,6 @@ app.get('/new/:url(*)', function(req, res) {
                             });
                         } else {
                         //what to do if not found
-                        //add validation if/else
                             console.log("result is not found")
                             var newId = shortid.generate();
                             console.log(newId, newUrl)
@@ -82,8 +74,10 @@ app.get('/new/:url(*)', function(req, res) {
                                 'shortUrl': newId
                             };
                         
-                            //collection.insertOne(newLink);
+                            //add new entry to db
                             collection.insertOne(newLink);
+                            console.log("inserting new document")
+                            res.send(newLink);
                         }
                     })
                 }//end insertUrl
@@ -91,28 +85,21 @@ app.get('/new/:url(*)', function(req, res) {
             
 
                 insertUrl(db, function(){
-                    collection.findOne({'longUrl': newUrl}, {'longUrl': 1, _id: 0}, function(err, result){
-                        if (err) {
-                            console.log("error is: " + err)
-                        }
-                                        
-                        res.send( {
-                            'longUrl': result.longUrl,
-                            'shortUrl': 'localhost:3000/' + result.shortUrl});
-                        });
-                        
-                    //close our connection    
+
+                    console.log("closing db connection")
                     db.close();
-                    console.log('connection to db closed');
-                })
+                });
+
             } else {
                 console.log('not a valid URL');
                 res.send('not a valid URL, please try again');
             }
         }
+
     });//end mongo
 });  //end app.get  
 
+//redirect route
 app.get('/:url', function(req, res){
     var shortUrl = req.params.url;
     var longUrl;
@@ -129,7 +116,6 @@ app.get('/:url', function(req, res){
                 collection.findOne( { 'shortUrl': shortUrl }
                     , {'longUrl': 1, 'shortUrl': 1, _id: 0}
                     , function(err, result){
-                    console.log({"error": err, "result": result});
                     
                         //if not found
                         if(result == null) {

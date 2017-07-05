@@ -1,10 +1,9 @@
 //fire up mongo
-var MongoClient = require('mongodb').MongoClient;
+var app = require('./app.js');
 
 //where the database is
 // var url = 'mongodb://localhost:27017/database_name';
 var url = 'mongodb://fcc-url:short-url@ds062339.mlab.com:62339/url-short';
-var currentEntry;
 
 MongoClient.connect(url, function(err, db){
     if(err) {
